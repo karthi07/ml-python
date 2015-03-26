@@ -58,8 +58,6 @@ test = np.tile([True,False],50)
 train = ~test
 
 
-
-
 features = features[~is_setosa]
 labels = labels[~is_setosa]
 virginica = (labels == 'virginica')
@@ -94,8 +92,53 @@ model = learn_model(features[train],virginica[train])
 print ('Training accuracy {0:.1%}.'.format(accuracy(features[train],model,virginica[train])))
 print ('Testing accuracy {0:.1%}'.format(accuracy(features[test],model,virginica[test])))
 
-#print best_acc,best_fi,best_t
-#print feature_name[3]
+
+#Load wheat seed dataset
+
+data = []
+label = []
+
+with open("seeds.tsv") as dfile:
+  for line in dfile:
+    token = line.strip().split("\t")
+    data.append( [float(tk) for tk in token[:-1]])
+    label.append(token[-1])
+  data = np.array(data)
+  label = np.array(label)
+
+print data.shape
+
+
+#knn classifer
+from knn import *
+
+features = data
+
+
+#cross validate
+
+
+def cross_validate(features,labels):
+    error = 0.0
+    for fold in range(10):
+        train = np.ones(len(features),bool)
+        train[fold::10]=0
+        test=~train
+        model = learn_model(1,features[train],labels[train])
+        test_error = accuracy(features[test],labels[test],model)
+        error += test_error
+
+    return error/ 10.0
+
+#error = cross_validate(features,label)
+
+#print ("The ten fold cross validate error is {0:.1%}".format(error))
+
+features -= features.mean(0)
+features /= features.std(0)
+error = cross_validate(features, label)
+print('Ten fold cross-validated error after z-scoring was {0:.1%}.'.format(error))
+
 
 
 
