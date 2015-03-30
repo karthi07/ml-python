@@ -1,20 +1,31 @@
 import os
 import scipy as sp
 import sys
-from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import CountVectorizer,TfidfVectorizer
 
-#Vectorizing raw text 
-#form text to bag of words
-
-vectorizer = CountVectorizer(min_df=1,stop_words='english')
-#print vectorizer
-
-content = ["How to format my hard disk","Hard Disk format problems"]
-X = vectorizer.fit_transform(content)
-#print vectorizer.get_feature_names()
-#print X.toarray().transpose()
 
 #Counting word and finding similarity
+
+#Vectorizer with NLTK stemmer
+
+import nltk.stem
+
+english_stemmer = nltk.stem.SnowballStemmer('english')
+
+class StemmedCountVectorizer(CountVectorizer):
+  def build_analyzer(self):
+    analyzer = super(StemmedCountVectorizer,self).build_analyzer()
+    return lambda doc: (english_stemmer.stem(w) for w in analyzer(doc))
+
+
+class StemmedTfidfVectorizer(TfidfVectorizer):
+  def build_analyzer(self):
+    analyzer = super(TfidfVectorizer,self).build_analyzer()
+    return lambda doc: (english_stemmer.stem(w) for w in analyzer(doc))
+
+#vectorizer = StemmedCountVectorizer(min_df=1,stop_words='english')
+
+vectorizer = StemmedTfidfVectorizer(min_df=1,stop_words='english')
 
 DIR = "text"
 posts = [open(os.path.join(DIR,f)).read() for f in os.listdir(DIR)]
